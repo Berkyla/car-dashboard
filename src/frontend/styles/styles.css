@@ -1,0 +1,329 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dashboard-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000; /* Устанавливаем черный фон */
+}
+
+.dashboard-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Сохранение пропорций */
+  z-index: 1; /* Меняйте z-index для порядка наложения */
+}
+
+.dashboard-frame {
+  z-index: 2; /* Рамка поверх заднего фона */
+}
+
+.engine-indicator {
+  z-index: 5; /* Кнопка выше остальных элементов */
+}
+
+.engine-indicator-wrapper {
+  position: absolute;
+  top: 162px; /* Позиция сверху, подкорректируйте значение */
+  right: 536px; /* Позиция справа, подкорректируйте значение */
+  width: 64px; /* Ширина кнопки */
+  height: 64px; /* Высота кнопки */
+  z-index: 6; /* Кнопка выше остальных элементов */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 50%; /* Делает область клика круглой */
+  background: transparent; /* Без фонового цвета */
+}
+
+.engine-indicator-text {
+  text-align: center;
+  font-family: 'bold', sans-serif; /* Шрифт текста */
+  font-size: 12px; /* Размер текста */
+  font-weight: bold;
+  color: white; /* Цвет текста */
+  text-transform: uppercase; /* Текст заглавными буквами */
+  line-height: 1.2; /* Межстрочный интервал */
+}
+
+.blinkers-indicator {
+  z-index: 2;
+}
+
+.gauge-container {
+  position: absolute;
+  z-index: 4; /* Индикаторы выше фона и рамки */
+}
+
+.gauge-left {
+  position: absolute;
+  top: 292px; /* Позиция сверху */
+  left: 417px; /* Позиция слева */
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.gauge-center {
+  width: auto; /* Установите точный размер спидометра */
+  height: auto;
+  top: 319px; /* Позиция сверху */
+  left: 765px; /* Позиция по центру */
+  transform: translate(-50%, -50%);
+}
+
+.gauge-right {
+  width: auto; /* Установите точный размер DualGauge */
+  height: auto;
+  top: 273px; /* Позиция сверху */
+  right: 421px; /* Позиция справа */
+  transform: translate(50%, -50%);
+}
+
+.dual-gauge-container {
+  position: relative;
+  width: 170px;
+  height: 170px;
+}
+
+/* Температура */
+.dual-gauge-temperature {
+  position: absolute;
+  z-index: 10;
+  top: 78px; /* Расположение над SVG */
+  left: -32px;
+  transform: translateX(-50%);
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Топливо */
+.dual-gauge-fuel {
+  position: absolute;
+  z-index: 10;
+  bottom: 70px; /* Расположение под SVG */
+  right: -50px; /* Смещение вправо */
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Основной контейнер для индикатора батареи */
+.battery-indicator-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 7;
+  color: #00ff00;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  background-color: transparent;
+  transform-origin: top left; /* Центр масштабирования */
+  transform: scale(0.8); /* Масштабирование индикатора */
+}
+
+/* Положение индикатора */
+.battery-indicator-position {
+  position: absolute;
+  top: 359px; /* Настраиваемая позиция сверху */
+  left: 1142px; /* Настраиваемая позиция слева */
+}
+
+/* Общий контейнер для батареи и заряда */
+.battery-status {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Минимальное расстояние между батарейкой и процентом */
+  margin-bottom: 2px; /* Отступ снизу батарейки */
+}
+
+/* Корпус батареи */
+.battery-case {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 равных сегмента */
+  align-items: center;
+  width: 50px; /* Общая длина батареи (адаптивная) */
+  height: 15px; /* Высота батареи */
+  border: 2px solid white;
+  border-radius: 4px;
+  background-color: black;
+  padding: 2px;
+  position: relative;
+}
+
+/* Сегменты батареи */
+.battery-segment {
+  height: 100%;
+  background-color: black;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin: 0 0.5px; /* Уменьшено расстояние между сегментами */
+}
+
+/* Цветовые зоны сегментов */
+.battery-segment.active.segment-1 {
+  background-color: red; /* Красный сегмент */
+}
+
+.battery-segment.active.segment-2 {
+  background-color: yellow; /* Желтый сегмент */
+}
+
+.battery-segment.active.segment-3 {
+  background-color: #00ff00; /* Зеленый сегмент */
+}
+
+/* Контакт батареи */
+.battery-case:after {
+  content: "";
+  position: absolute;
+  right: -6px; /* Положение контакта */
+  top: 20%;
+  width: 4px;
+  height: 60%;
+  background-color: white;
+  border-radius: 1px;
+}
+
+/* Процент заряда батареи */
+.battery-charge {
+  font-size: 14px; /* Размер текста процента */
+  color: white;
+  margin-left: 4px; /* Уменьшено расстояние справа от батареи */
+}
+
+/* Информация о напряжении */
+.battery-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Минимизируем отступы */
+  gap: 2px; /* Уменьшено расстояние между иконкой и текстом напряжения */
+  margin-top: -10px; /* Поднятие текста с иконкой ближе к батарейке */
+}
+
+/* Иконка зарядки */
+.battery-icon {
+  font-size: 16px; /* Размер иконки */
+  color: yellow; /* Цвет молнии */
+}
+
+/* Напряжение батареи */
+.battery-voltage {
+  font-size: 18px; /* Размер текста напряжения */
+  color: white;
+}
+
+/* Позиция одометра */
+.odometer-position {
+  position: absolute;
+  top: 360px; /* Настраиваемая позиция сверху */
+  left: 1042px; /* Настраиваемая позиция слева */
+  transform: translateX(-50%);
+  z-index: 9; /* Для отображения поверх других элементов */
+}
+
+/* Стиль для одометра */
+.odometer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent; /* Прозрачный фон */
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  width: 90px; /* Ширина */
+  height: 25px; /* Высота */
+  z-index: 9; /* Для отображения поверх других элементов */
+  position: relative; /* Для точного управления внутренними элементами */
+}
+
+/* Метка одометра */
+.odometer-label {
+  font-size: 9px; /* Размер шрифта */
+  color: white;
+  position: absolute;
+  top: -1px; /* Почти вплотную к верхнему краю */
+  left: 5px; /* Сдвиг ближе к левому краю */
+}
+
+/* Значение одометра */
+.odometer-value {
+  font-size: 14px; /* Размер шрифта для значения */
+  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 2px; /* Минимальный промежуток между значением и единицей */
+  position: relative;
+  top: 3px; /* Сдвиг вниз */
+}
+
+/* Единицы измерения */
+.odometer-unit {
+  font-size: 9px; /* Уменьшенный шрифт для единиц измерения */
+  margin-left: 1px; /* Минимальный отступ между значением и единицей */
+}
+
+/* Основной контейнер шкалы */
+.oil-level-gauge {
+  position: relative;
+  width: 300px;
+  height: 50px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 9;
+  font-family: "Roboto", sans-serif;
+}
+
+/* Контейнер шкалы */
+.oil-level-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #333;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 20px;
+}
+
+/* Заполнение шкалы */
+.oil-level-fill {
+  height: 100%;
+  background-color: #00ff00; /* Зеленый цвет */
+  transition: width 0.2s ease-in-out; /* Плавный переход */
+}
+
+/* Метки уровней */
+.oil-level-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #fff;
+}
+
+/* Индикатор уровня масла */
+.oil-level-indicator {
+  position: absolute;
+  top: -25px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
