@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dashboard-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000; /* Устанавливаем черный фон */
+}
+
+.dashboard-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Сохранение пропорций */
+  z-index: 1; /* Меняйте z-index для порядка наложения */
+}
+
+.dashboard-frame {
+  z-index: 2; /* Рамка поверх заднего фона */
+}
+
+.blinkers-indicator {
+  z-index: 2;
+}
+
+.gauge-container {
+  position: absolute;
+  z-index: 4; /* Индикаторы выше фона и рамки */
+}
+
+.gauge-left {
+  position: absolute;
+  top: 293.5px; /* Позиция сверху */
+  left: 414px; /* Позиция слева */
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.gauge-center {
+  width: auto; /* Установите точный размер спидометра */
+  height: auto;
+  top: 319px; /* Позиция сверху */
+  left: 765px; /* Позиция по центру */
+  transform: translate(-50%, -50%);
+}
+
+.gauge-right {
+  width: auto; /* Установите точный размер DualGauge */
+  height: auto;
+  top: 275.5px; /* Позиция сверху */
+  right: 420px; /* Позиция справа */
+  transform: translate(50%, -50%);
+}
+
+.dual-gauge-container {
+  position: relative;
+  width: 170px;
+  height: 170px;
+}
+
+/* Температура */
+.dual-gauge-temperature {
+  position: absolute;
+  z-index: 10;
+  top: 78px; /* Расположение над SVG */
+  left: -32px;
+  transform: translateX(-50%);
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Топливо */
+.dual-gauge-fuel {
+  position: absolute;
+  z-index: 10;
+  bottom: 70px; /* Расположение под SVG */
+  right: -50px; /* Смещение вправо */
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Положение индикатора напряжения */
+.voltage-indicator-position {
+  position: absolute;
+  top: 360px; /* Позиция сверху */
+  left: 1180px; /* Позиция слева */
+  z-index: 8; /* Поверх других элементов */
+  transform: translateX(-50%);
+}
+
+/* Контейнер для индикатора напряжения */
+.voltage-indicator-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent; /* Прозрачный фон */
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  width: 90px; /* Ширина */
+  height: 25px; /* Высота */
+  z-index: 9; /* Для отображения поверх других элементов */
+  position: relative; /* Для точного управления внутренними элементами */
+}
+
+/* Текст "VOLT" */
+.voltage-label {
+  font-size: 9px; /* Размер шрифта */
+  color: white;
+  position: absolute;
+  top: 1px; /* Почти вплотную к верхнему краю */
+  left: 7px; /* Сдвиг ближе к левому краю */
+}
+
+/* Значение напряжения */
+.voltage-value {
+  font-size: 16px; /* Размер шрифта для значения */
+  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 2px; /* Минимальный промежуток между значением и единицей */
+  position: relative;
+  top: 5px; /* Сдвиг вниз */
+}
+
+/* Позиция одометра */
+.odometer-position {
+  position: absolute;
+  top: 360px; /* Настраиваемая позиция сверху */
+  left: 1042px; /* Настраиваемая позиция слева */
+  transform: translateX(-50%);
+  z-index: 9; /* Для отображения поверх других элементов */
+}
+
+/* Стиль для одометра */
+.odometer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent; /* Прозрачный фон */
+  color: white;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  width: 90px; /* Ширина */
+  height: 25px; /* Высота */
+  z-index: 9; /* Для отображения поверх других элементов */
+  position: relative; /* Для точного управления внутренними элементами */
+}
+
+/* Метка одометра */
+.odometer-label {
+  font-size: 9px; /* Размер шрифта */
+  color: white;
+  position: absolute;
+  top: 1px; /* Почти вплотную к верхнему краю */
+  left: 6px; /* Сдвиг ближе к левому краю */
+}
+
+/* Значение одометра */
+.odometer-value {
+  font-size: 14px; /* Размер шрифта для значения */
+  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 2px; /* Минимальный промежуток между значением и единицей */
+  position: relative;
+  top: 5px; /* Сдвиг вниз */
+}
+
+/* Единицы измерения */
+.odometer-unit {
+  font-size: 9px; /* Уменьшенный шрифт для единиц измерения */
+  margin-left: 1px; /* Минимальный отступ между значением и единицей */
+}
+
+.indicator-icon {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  z-index: 20;
+}
+
+.indicator-coolant {
+  top: 250px;
+  left: 978px;
+}
+
+.indicator-fuel {
+  top: 250px;
+  left: 1184px;
+}
+
+.indicator-voltage {
+  top: 392px;
+  left: 1170px;
+}
+
+.gear-indicator {
+  position: absolute;
+  top: 165px; /* адаптируй по координатам круга */
+  left: 943px; /* подвинь в центр круга */
+  font-size: 40px;
+  font-weight: 800;
+  color: #eaeaea;
+  font-family: 'Orbitron', sans-serif; /* пример техно-шрифта */
+  text-shadow: 0 0 4px #000;
+  z-index: 20;
+}
+
+.gear-display {
+  position: absolute;
+  top: 165px;
+  left: 943px;
+  font-size: 40px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  color: white;
+  transition: transform 0.2s ease;
+  z-index: 20;
+}
+
+.gear-shifted {
+  transform: translateX(2px);
+}
