@@ -1,3 +1,0 @@
-[2025-06-08 12:39:30] === Application started ===
-[2025-06-08 12:39:30] WebSocket сервер запущен на ws://localhost:8080
-[2025-06-08 12:48:53] === Application exited ===
