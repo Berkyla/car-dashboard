@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\kille\\Desktop\\cursuck\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj": {}
+    "C:\\Users\\kille\\Desktop\\CourseWork\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj": {}
   },
   "projects": {
-    "C:\\Users\\kille\\Desktop\\cursuck\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj": {
+    "C:\\Users\\kille\\Desktop\\CourseWork\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kille\\Desktop\\cursuck\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj",
+        "projectUniqueName": "C:\\Users\\kille\\Desktop\\CourseWork\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj",
         "projectName": "СontrolBlock",
-        "projectPath": "C:\\Users\\kille\\Desktop\\cursuck\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj",
+        "projectPath": "C:\\Users\\kille\\Desktop\\CourseWork\\СontrolBlock\\СontrolBlock\\СontrolBlock.csproj",
         "packagesPath": "C:\\Users\\kille\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kille\\Desktop\\cursuck\\СontrolBlock\\СontrolBlock\\obj\\",
+        "outputPath": "C:\\Users\\kille\\Desktop\\CourseWork\\СontrolBlock\\СontrolBlock\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

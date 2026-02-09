@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Builds
+dist
+build
+out
+.next
+.nuxt
+
+# .NET
+**/bin
+**/obj
+.vs
+
+# Logs
+logs
+*.log
+
+# IDE
+.vscode
+.idea
+
+# Caches
+.cache
+.parcel-cache
+.temp
+
+# Env files (не кладём секреты в образ)
+.env
+.env.*
