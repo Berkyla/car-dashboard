@@ -1,0 +1,7 @@
+services:
+  frontend:
+    build: ./car-dashboard
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_WS_URL=ws://host.docker.internal:8080

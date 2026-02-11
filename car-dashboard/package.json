@@ -1,10 +1,9 @@
 {
   "name": "car-dashboard",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "npx tailwindcss -i ./src/frontend/styles/styles.css -o ./dist/styles.css",
+    "build:css": "node ./node_modules/tailwindcss/lib/cli.js -i ./src/frontend/styles/styles.css -o ./dist/styles.css",
     "copy-images": "xcopy src\\frontend\\assets\\images dist\\frontend\\assets\\images /E /I /Y",
     "start": "npm run build:css && npx tsc && npm run copy-images && parcel src/index.html"
   },

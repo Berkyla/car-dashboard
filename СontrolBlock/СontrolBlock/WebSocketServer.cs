@@ -30,7 +30,7 @@ namespace ControlBlock
                 };
             });
 
-            Program.Log("WebSocket сервер запущен на ws://localhost:8080");
+            Program.Log("WebSocket сервер запущен на ws://0.0.0.0:8080");
         }
 
         // Отправка строки данных всем подключённым клиентам

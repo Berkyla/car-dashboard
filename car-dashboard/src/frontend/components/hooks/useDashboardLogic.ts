@@ -1,86 +1,158 @@
-import { useState, useEffect } from "react";
+// src/frontend/hooks/useDashboardLogic.ts
+import { useEffect, useMemo, useRef, useState } from "react";
+import { WS_URL } from "../../config/ws";
+import {
+  evaluateZones,
+  getParameterSpec,
+  quantize,
+  type CoolantMode,
+  type MotionMode,
+  type EnvContext,
+} from "spec/parameters";
 
-// Хук управления логикой панели приборов и WebSocket
+type Indicators = {
+  overheat: boolean;
+  lowFuel: boolean;
+  lowVoltage: boolean;
+};
+
+type DashboardMessage = {
+  speed?: number;
+  rpm?: number;
+  gear?: string;
+  clutch?: boolean;
+
+  fuelLevel?: number;     // ВАЖНО: ожидаем долю 0..1 (по ТЗ)
+  temperature?: number;   // tОЖ
+  voltage?: number;
+  mileage?: number;
+
+  engineRunning?: boolean;
+};
+
 export const useDashboardLogic = () => {
-  const [engineStarted, setEngineStarted] = useState(false); // Состояние двигателя
-  const [speed, setSpeed] = useState(0);                     // Скорость
-  const [rpm, setRpm] = useState(800);                       // Обороты двигателя
-  const [gear, setGear] = useState("N");                     // Текущая передача
-  const [clutchPressed, setClutchPressed] = useState(false); // Сцепление
+  const [engineStarted, setEngineStarted] = useState(false);
 
-  const [fuelLevel, setFuelLevel] = useState(39);            // Уровень топлива
-  const [temperature, setTemperature] = useState(90);        // Температура двигателя
-  const [voltage, setVoltage] = useState(14.2);              // Напряжение сети
-  const [mileage, setMileage] = useState(0.0);               // Пробег
+  const [speed, setSpeed] = useState(0);
+  const [rpm, setRpm] = useState(800);
+  const [gear, setGear] = useState("N");
+  const [clutchPressed, setClutchPressed] = useState(false);
 
-  let socket: WebSocket | null = null;
+  // По умолчанию оставляем твои значения как “стартовые”
+  // (в дальнейшем их будет задавать ControlBlock)
+  const [fuelLevel, setFuelLevel] = useState(39);     // ⚠️ см. примечание ниже
+  const [temperature, setTemperature] = useState(90);
+  const [voltage, setVoltage] = useState(14.2);
+  const [mileage, setMileage] = useState(0.0);
 
-  // Установка WebSocket-соединения и обработка событий
+  // Контекст ТЗ
+  const [coolantMode, setCoolantMode] = useState<CoolantMode>("water");
+  const [motionMode, setMotionMode] = useState<MotionMode>("parked");
+
+  const ctx: EnvContext = useMemo(
+    () => ({ coolantMode, motionMode }),
+    [coolantMode, motionMode]
+  );
+
+  const socketRef = useRef<WebSocket | null>(null);
+
   useEffect(() => {
-    socket = new WebSocket("ws://localhost:8080");
+    console.log("[WS] WS_URL =", WS_URL);
 
-    socket.onopen = () => {
-      console.log("[WebSocket] Подключено к серверу.");
-    };
+    const ws = new WebSocket(WS_URL);
+    socketRef.current = ws;
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setSpeed(data.speed);
-      setRpm(data.rpm);
-      setGear(data.gear);
-      setClutchPressed(data.clutch);
+    ws.onopen = () => console.log("[WebSocket] Подключено к серверу:", WS_URL);
 
-      if (!engineStarted && data.speed > 0) {
-        setEngineStarted(true);
+    ws.onmessage = (event) => {
+      let data: DashboardMessage;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        console.warn("[WebSocket] Некорректный JSON:", event.data);
+        return;
       }
+
+      // --- speed (и автоматический motionMode) ---
+      if (typeof data.speed === "number" && isFinite(data.speed)) {
+        const spec = getParameterSpec("speed", ctx);
+        const s = quantize(Math.max(0, data.speed), spec.step);
+        setSpeed(s);
+        setMotionMode(s > 0 ? "moving" : "parked");
+      }
+
+      // --- rpm ---
+      if (typeof data.rpm === "number" && isFinite(data.rpm)) {
+        const spec = getParameterSpec("rpm", ctx);
+        setRpm(quantize(data.rpm, spec.step));
+      }
+
+      // --- gear/clutch ---
+      if (typeof data.gear === "string") setGear(data.gear || "N");
+      if (typeof data.clutch === "boolean") setClutchPressed(data.clutch);
+
+      // --- fuel ---
+      // По ТЗ fuel = доля 0..1.
+      // Если твой ControlBlock пока шлёт "литры" или "0..50", нужно будет конвертировать.
+      // Пока применяем квантизацию по спекам и слегка ограничим диапазон 0..1.
+      if (typeof data.fuelLevel === "number" && isFinite(data.fuelLevel)) {
+        const raw = Math.max(0, data.fuelLevel);
+        // если вдруг сервер пришлёт долю 0..1 — переведём в 0..50
+        const liters = raw <= 1.5 ? raw * 50 : raw;
+        setFuelLevel(liters);
+      }
+
+      // --- coolant temperature (tОЖ) ---
+      if (typeof data.temperature === "number" && isFinite(data.temperature)) {
+        const spec = getParameterSpec("coolantTemp", ctx);
+        setTemperature(quantize(data.temperature, spec.step));
+      }
+
+      // --- voltage ---
+      if (typeof data.voltage === "number" && isFinite(data.voltage)) {
+        const spec = getParameterSpec("voltage", ctx);
+        setVoltage(quantize(data.voltage, spec.step));
+      }
+
+      // --- mileage ---
+      if (typeof data.mileage === "number" && isFinite(data.mileage)) {
+        setMileage(data.mileage);
+      }
+
+      // --- engine state ---
+      if (typeof data.engineRunning === "boolean") {
+        setEngineStarted(data.engineRunning);
+      } else if (typeof data.speed === "number" && isFinite(data.speed)) {
+        const sp = data.speed;
+        setEngineStarted((prev) => prev || sp > 0);
+      }
+
     };
 
-    socket.onerror = (error) => {
-      console.error("[WebSocket] Ошибка соединения:", error);
-    };
-
-    socket.onclose = () => {
-      console.log("[WebSocket] Соединение закрыто.");
-    };
+    ws.onerror = (error) => console.error("[WebSocket] Ошибка соединения:", error);
+    ws.onclose = () => console.log("[WebSocket] Соединение закрыто.");
 
     return () => {
-      socket?.close();
+      ws.close();
+      socketRef.current = null;
       console.log("[WebSocket] Соединение закрыто (при размонтировании).");
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // один раз
 
-  // Отправка команды на сервер
   const sendCommand = (command: string) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ action: command }));
+    const ws = socketRef.current;
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ action: command }));
     } else {
       console.warn("[WebSocket] Попытка отправки при закрытом соединении:", command);
     }
   };
 
-  // Обработка запуска/остановки двигателя
-  const handleStartStopEngine = () => {
-    setEngineStarted((prev) => !prev);
-    sendCommand("toggle_engine");
-
-    if (!engineStarted) {
-      setFuelLevel(39);
-      setTemperature(90);
-      setVoltage(14.2);
-    } else {
-      setFuelLevel(0);
-      setTemperature(0);
-      setVoltage(0);
-    }
-  };
-
-  // Обработка нажатия педали газа
+  const handleStartStopEngine = () => sendCommand("toggle_engine");
   const handleAccelerate = () => sendCommand("accelerate");
-
-  // Обработка торможения
   const handleBrake = () => sendCommand("brake");
 
-  // Обработка переключения передачи
   const handleShiftGear = (newGear: string) => {
     if (clutchPressed) {
       setGear(newGear);
@@ -88,11 +160,27 @@ export const useDashboardLogic = () => {
     }
   };
 
-  // Обработка нажатия/отпускания сцепления
   const handlePressClutch = () => {
     setClutchPressed((prev) => !prev);
     sendCommand("toggle_clutch");
   };
+
+  // --- Indicators по ТЗ через спеки ---
+  const indicators: Indicators = useMemo(() => {
+    const coolantStatus = evaluateZones(getParameterSpec("coolantTemp", ctx), temperature);
+    const fuelFraction = Math.max(0, Math.min(1, fuelLevel / 50));
+    const fuelStatus = evaluateZones(getParameterSpec("fuel", ctx), fuelFraction);
+    const voltageStatus = evaluateZones(getParameterSpec("voltage", ctx), voltage);
+
+    return {
+      // перегрев = аварийная зона по tОЖ
+      overheat: coolantStatus.severity === "alarm",
+      // топливо: warn или alarm
+      lowFuel: fuelStatus.severity !== "normal",
+      // напряжение: warn или alarm
+      lowVoltage: voltageStatus.severity !== "normal",
+    };
+  }, [ctx, temperature, fuelLevel, voltage]);
 
   return {
     engineStarted,
@@ -100,10 +188,20 @@ export const useDashboardLogic = () => {
     rpm,
     gear,
     clutchPressed,
+
     fuelLevel,
     temperature,
     voltage,
     mileage,
+
+    // режимы (пока не используются UI, но пригодятся)
+    coolantMode,
+    motionMode,
+    setCoolantMode, // можно потом привязать к настройке
+    setMotionMode,  // можно не отдавать наружу, но оставляю для отладки
+
+    indicators,
+
     handleStartStopEngine,
     handleAccelerate,
     handleBrake,

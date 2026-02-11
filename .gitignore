@@ -97,6 +97,7 @@ lib-cov/
 # Visual Studio / .NET
 ####################################
 .vs/
+**/.vs/
 **/bin/
 **/obj/
 
