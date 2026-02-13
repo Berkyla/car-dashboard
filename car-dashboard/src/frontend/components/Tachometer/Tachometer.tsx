@@ -26,7 +26,9 @@ const UI_MAX_RPM = 3500;
 const MAJOR_STEP_RPM = 500;
 const MINOR_STEP_RPM = 250;
 const LABEL_STEP_RPM = 1000;
-const NEEDLE_ALPHA = 0.15;
+const NEEDLE_SMOOTH_TIME_SEC = 0.18;
+const NEEDLE_MAX_RPM_PER_SEC = 7000;
+const NEEDLE_SETTLE_EPSILON = 0.5;
 
 const zoneColors: Record<ZoneKind, string> = {
   green: "#00c853",
@@ -44,26 +46,43 @@ const clamp = (value: number, min: number, max: number): number => {
 };
 
 const Tachometer: React.FC<TachometerProps> = ({ rpm, maxRpm }) => {
-  const [displayRpm, setDisplayRpm] = useState(clamp(rpm, UI_MIN_RPM, UI_MAX_RPM));
+  const normalizedInputRpm = clamp(rpm, UI_MIN_RPM, UI_MAX_RPM);
+
+  const [displayRpm, setDisplayRpm] = useState(normalizedInputRpm);
 
   const animationFrameRef = useRef<number | null>(null);
-  const targetRpmRef = useRef(clamp(rpm, UI_MIN_RPM, UI_MAX_RPM));
-  const displayRpmRef = useRef(clamp(rpm, UI_MIN_RPM, UI_MAX_RPM));
+  const prevFrameTimeRef = useRef<number | null>(null);
+  const targetRpmRef = useRef(normalizedInputRpm);
+  const displayRpmRef = useRef(normalizedInputRpm);
 
   void maxRpm;
 
   useEffect(() => {
-    targetRpmRef.current = clamp(rpm, UI_MIN_RPM, UI_MAX_RPM);
-  }, [rpm]);
+    targetRpmRef.current = normalizedInputRpm;
+  }, [normalizedInputRpm]);
 
   useEffect(() => {
-    const tick = () => {
+    const tick = (timestamp: number) => {
+      const previousTimestamp = prevFrameTimeRef.current ?? timestamp;
+      const dtSec = Math.max(0, (timestamp - previousTimestamp) / 1000);
+      prevFrameTimeRef.current = timestamp;
+
       const target = targetRpmRef.current;
       const current = displayRpmRef.current;
-      const next = clamp(current + (target - current) * NEEDLE_ALPHA, UI_MIN_RPM, UI_MAX_RPM);
 
-      displayRpmRef.current = next;
-      setDisplayRpm(next);
+      const alpha = 1 - Math.exp(-dtSec / NEEDLE_SMOOTH_TIME_SEC);
+      const easedCandidate = current + (target - current) * alpha;
+
+      const maxStep = NEEDLE_MAX_RPM_PER_SEC * dtSec;
+      const rawDelta = easedCandidate - current;
+      const limitedDelta = clamp(rawDelta, -maxStep, maxStep);
+      const next = clamp(current + limitedDelta, UI_MIN_RPM, UI_MAX_RPM);
+
+      const settled = Math.abs(target - next) < NEEDLE_SETTLE_EPSILON;
+      const nextValue = settled ? target : next;
+
+      displayRpmRef.current = nextValue;
+      setDisplayRpm(nextValue);
 
       animationFrameRef.current = requestAnimationFrame(tick);
     };
@@ -75,6 +94,7 @@ const Tachometer: React.FC<TachometerProps> = ({ rpm, maxRpm }) => {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
+      prevFrameTimeRef.current = null;
     };
   }, []);
 

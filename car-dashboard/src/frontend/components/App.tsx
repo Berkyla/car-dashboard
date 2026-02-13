@@ -83,11 +83,11 @@ const App: React.FC = () => {
             {/* Основное содержимое приборной панели */}
             <div className="dashboard-content">
               <div className="gauge-container gauge-left">
-                <Tachometer rpm={rpm} maxRpm={8000} />
+                <Tachometer rpm={rpm} maxRpm={3500} />
               </div>
 
               <div className="gauge-container gauge-center">
-                <Speedometer speed={speed} maxSpeed={200} />
+                <Speedometer speed={speed} maxSpeed={120} />
               </div>
 
               <div className="gauge-container gauge-right">
