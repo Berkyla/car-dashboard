@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+.viewport {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.screen {
+  width: 1024px;
+  height: 768px;
+  position: relative;
+  transform-origin: center;
+}
+
+.screen .dashboard-wrapper,
+.screen .dashboard-container {
+  width: 100%;
+  height: 100%;
+}
+
 .dashboard-container {
   position: relative;
   width: 100vw;
@@ -38,26 +60,26 @@
 
 .gauge-left {
   position: absolute;
-  top: 292px;
-  left: 416.5px;
-  transform: translate(-50%, -50%);
+  top: 235px;
+  left: 128px;
+  transform: scale(0.8);
   overflow: visible;
 }
 
 .gauge-center {
   width: auto;
   height: auto;
-  top: 319px;
-  left: 765px;
-  transform: translate(-50%, -50%);
+  top: 168px;
+  left: 325.5px;
+  transform: scale(0.8);
 }
 
 .gauge-right {
   width: auto;
   height: auto;
-  top: 273.5px;
-  right: 422px;
-  transform: translate(50%, -50%);
+  top: 234px;
+  right: 147px;
+  transform: scale(0.8);
 }
 
 .dual-gauge-container {
@@ -91,10 +113,10 @@
 
 .voltage-indicator-position {
   position: absolute;
-  top: 360px;
-  left: 1180px;
+  top: 388px;
+  left: 811px;
   z-index: 8;
-  transform: translateX(-50%);
+  transform: scale(0.95);
 }
 
 .voltage-indicator-container {
@@ -132,9 +154,9 @@
 
 .odometer-position {
   position: absolute;
-  top: 360px;
-  left: 1042px;
-  transform: translateX(-50%);
+  top: 388px;
+  left: 700px;
+  transform: scale(1);
   z-index: 9;
 }
 
@@ -184,18 +206,20 @@
 }
 
 .indicator-coolant {
-  top: 250px;
-  left: 977px;
+  top: 295px;
+  left: 682px;
+  transform: scale(1);
 }
 
 .indicator-fuel {
-  top: 250px;
-  left: 1182px;
+  top: 295px;
+  left: 848px;
+  transform: scale(0.95);
 }
 
 .indicator-voltage {
-  top: 392px;
-  left: 1170px;
+  top: 414px;
+  left: 823px;
 }
 
 .gear-indicator {
@@ -212,14 +236,15 @@
 
 .gear-display {
   position: absolute;
-  top: 165px;
-  left: 943px;
+  top: 225px;
+  left: 655px;
   font-size: 40px;
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
   color: white;
   transition: transform 0.2s ease;
   z-index: 20;
+  transform: scale(0.95);
 }
 
 .gear-shifted {

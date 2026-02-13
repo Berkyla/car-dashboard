@@ -121,12 +121,13 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
     unit: "об/мин",
     step: 50,
     periodMs: 1000,
-    scale: r(0, 3200),
+    scale: r(0, 3500),
     zones: [
-      z("red", clampScale(r(0, 3200), [r(0, 899)]), "warn"),
-      z("yellow", clampScale(r(0, 3200), [r(900, 1200), r(2600, 2900)]), "warn"),
-      z("green", clampScale(r(0, 3200), [r(1200, 2600)]), "normal"),
-      z("alarm", clampScale(r(0, 3200), [r(2901, 3200)]), "alarm"),
+      z("red", clampScale(r(0, 3500), [r(0, 899)]), "warn"),
+      z("yellow", clampScale(r(0, 3500), [r(900, 1200)]), "warn"),
+      z("green", clampScale(r(0, 3500), [r(1200, 2600)]), "normal"),
+      z("yellow", clampScale(r(0, 3500), [r(2600, 2900)]), "warn"),
+      z("alarm", clampScale(r(0, 3500), [r(2901, 3500)]), "alarm"),
     ],
   },
 

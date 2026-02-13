@@ -65,7 +65,7 @@ namespace ControlBlock
                 await Task.Delay(50);
             }
 
-            RPM = 800;
+            RPM = 920;
             SendData(force: true);
             Program.Log("Двигатель успешно запущен");
         }
