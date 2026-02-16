@@ -109,8 +109,8 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
     unit: "км/ч",
     step: 1,
     periodMs: 1000,
-    scale: r(0, 200),
-    zones: [z("green", [r(0, 200)], "normal")],
+    scale: r(0, 120),
+    zones: [z("green", [r(0, 120)], "normal")],
     note: "По ТЗ для скорости задан зелёный сектор на весь диапазон.",
   },
 
