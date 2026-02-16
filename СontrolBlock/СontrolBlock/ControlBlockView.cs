@@ -28,6 +28,9 @@ namespace СontrolBlock
             numericUpDownTemperature.Value = 90;
             numericUpDownFuelLevel.Value = 40;
             numericUpDownVoltage.Value = 13.5M;
+            numericUpDownPMd.Value = 3.0M;
+            numericUpDownPSmGmt.Value = 1.0M;
+            numericUpDownPUprGmt.Value = 15.0M;
         }
 
         // Запуск или остановка двигателя
@@ -114,6 +117,30 @@ namespace СontrolBlock
             Program.Log($"Напряжение установлено: {numericUpDownVoltage.Value}");
         }
 
+        // Изменение давления РМ.ДВ
+        private void numericUpDownPMd_ValueChanged(object sender, EventArgs e)
+        {
+            if (!engineRunning) return;
+            car.SetPMd((double)numericUpDownPMd.Value);
+            Program.Log($"РМ.ДВ установлен: {numericUpDownPMd.Value}");
+        }
+
+        // Изменение давления РСМ.ГМТ
+        private void numericUpDownPSmGmt_ValueChanged(object sender, EventArgs e)
+        {
+            if (!engineRunning) return;
+            car.SetPSmGmt((double)numericUpDownPSmGmt.Value);
+            Program.Log($"РСМ.ГМТ установлен: {numericUpDownPSmGmt.Value}");
+        }
+
+        // Изменение давления РУПР.ГМТ
+        private void numericUpDownPUprGmt_ValueChanged(object sender, EventArgs e)
+        {
+            if (!engineRunning) return;
+            car.SetPUprGmt((double)numericUpDownPUprGmt.Value);
+            Program.Log($"РУПР.ГМТ установлен: {numericUpDownPUprGmt.Value}");
+        }
+
         // Смена передачи вручную
         private void comboBoxGear_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -142,6 +169,9 @@ namespace СontrolBlock
             numericUpDownTemperature.Enabled = enabled;
             numericUpDownFuelLevel.Enabled = enabled;
             numericUpDownVoltage.Enabled = enabled;
+            numericUpDownPMd.Enabled = enabled;
+            numericUpDownPSmGmt.Enabled = enabled;
+            numericUpDownPUprGmt.Enabled = enabled;
         }
 
         // Инициализация всех элементов управления
@@ -150,6 +180,9 @@ namespace СontrolBlock
             InitializeFuelLevel();
             InitializeTemperature();
             InitializeVoltage();
+            InitializePMd();
+            InitializePSmGmt();
+            InitializePUprGmt();
             InitializeGearSelector();
         }
 
@@ -180,6 +213,33 @@ namespace СontrolBlock
             numericUpDownVoltage.Increment = 0.01M;
         }
 
+        // Настройка поля РМ.ДВ
+        private void InitializePMd()
+        {
+            numericUpDownPMd.Minimum = 0;
+            numericUpDownPMd.Maximum = 16;
+            numericUpDownPMd.DecimalPlaces = 1;
+            numericUpDownPMd.Increment = 0.1M;
+        }
+
+        // Настройка поля РСМ.ГМТ
+        private void InitializePSmGmt()
+        {
+            numericUpDownPSmGmt.Minimum = 0;
+            numericUpDownPSmGmt.Maximum = 5;
+            numericUpDownPSmGmt.DecimalPlaces = 2;
+            numericUpDownPSmGmt.Increment = 0.05M;
+        }
+
+        // Настройка поля РУПР.ГМТ
+        private void InitializePUprGmt()
+        {
+            numericUpDownPUprGmt.Minimum = 0;
+            numericUpDownPUprGmt.Maximum = 30;
+            numericUpDownPUprGmt.DecimalPlaces = 1;
+            numericUpDownPUprGmt.Increment = 0.1M;
+        }
+
         // Настройка селектора передач
         private void InitializeGearSelector()
         {
@@ -201,7 +261,11 @@ namespace СontrolBlock
                 voltage = Math.Round(car.Voltage, 2),
                 mileage = Math.Round(car.Mileage, 4),
                 temperature = Math.Round(car.Temperature, 2),
-                fuellevel = Math.Round(car.FuelLevel, 2)
+                fuelLevel = Math.Round(car.FuelLevel, 2),
+                fuellevel = Math.Round(car.FuelLevel, 2),
+                p_md = Math.Round(car.PMd, 2),
+                p_sm_gmt = Math.Round(car.PSmGmt, 2),
+                p_upr_gmt = Math.Round(car.PUprGmt, 2)
             };
 
             string jsonData = JsonConvert.SerializeObject(data);

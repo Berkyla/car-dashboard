@@ -22,13 +22,23 @@ type DashboardMessage = {
   gear?: string;
   clutch?: boolean;
 
-  fuelLevel?: number;     // ВАЖНО: ожидаем долю 0..1 (по ТЗ)
-  temperature?: number;   // tОЖ
+  fuelLevel?: number;
+  fuellevel?: number;
+  temperature?: number;
   voltage?: number;
   mileage?: number;
 
+  p_md?: number;
+  p_sm_gmt?: number;
+  p_upr_gmt?: number;
+
+  pMd?: number;
+  pSmGmt?: number;
+  pUprGmt?: number;
+
   engineRunning?: boolean;
 };
+
 
 export const useDashboardLogic = () => {
   const [engineStarted, setEngineStarted] = useState(false);
@@ -38,12 +48,15 @@ export const useDashboardLogic = () => {
   const [gear, setGear] = useState("N");
   const [clutchPressed, setClutchPressed] = useState(false);
 
-  // По умолчанию оставляем твои значения как “стартовые”
-  // (в дальнейшем их будет задавать ControlBlock)
-  const [fuelLevel, setFuelLevel] = useState(39);     // ⚠️ см. примечание ниже
+  const [fuelLevel, setFuelLevel] = useState(39);
   const [temperature, setTemperature] = useState(90);
   const [voltage, setVoltage] = useState(14.2);
   const [mileage, setMileage] = useState(0.0);
+
+  const [pMd, setPMd] = useState(0);
+  const [pSmGmt, setPSmGmt] = useState(0);
+  const [pUprGmt, setPUprGmt] = useState(0);
+
 
   // Контекст ТЗ
   const [coolantMode, setCoolantMode] = useState<CoolantMode>("water");
@@ -67,13 +80,12 @@ export const useDashboardLogic = () => {
     ws.onmessage = (event) => {
       let data: DashboardMessage;
       try {
-        data = JSON.parse(event.data);
+        data = JSON.parse(event.data) as DashboardMessage;
       } catch {
         console.warn("[WebSocket] Некорректный JSON:", event.data);
         return;
       }
 
-      // --- speed (и автоматический motionMode) ---
       if (typeof data.speed === "number" && isFinite(data.speed)) {
         const spec = getParameterSpec("speed", ctx);
         const s = quantize(Math.max(0, data.speed), spec.step);
@@ -81,52 +93,64 @@ export const useDashboardLogic = () => {
         setMotionMode(s > 0 ? "moving" : "parked");
       }
 
-      // --- rpm ---
       if (typeof data.rpm === "number" && isFinite(data.rpm)) {
         const spec = getParameterSpec("rpm", ctx);
         setRpm(quantize(data.rpm, spec.step));
       }
 
-      // --- gear/clutch ---
       if (typeof data.gear === "string") setGear(data.gear || "N");
       if (typeof data.clutch === "boolean") setClutchPressed(data.clutch);
 
-      // --- fuel ---
-      // По ТЗ fuel = доля 0..1.
-      // Если твой ControlBlock пока шлёт "литры" или "0..50", нужно будет конвертировать.
-      // Пока применяем квантизацию по спекам и слегка ограничим диапазон 0..1.
-      if (typeof data.fuelLevel === "number" && isFinite(data.fuelLevel)) {
-        const raw = Math.max(0, data.fuelLevel);
-        // если вдруг сервер пришлёт долю 0..1 — переведём в 0..50
+      const incomingFuel = typeof data.fuelLevel === "number" ? data.fuelLevel : data.fuellevel;
+      if (typeof incomingFuel === "number" && isFinite(incomingFuel)) {
+        const raw = Math.max(0, incomingFuel);
         const liters = raw <= 1.5 ? raw * 50 : raw;
         setFuelLevel(liters);
       }
 
-      // --- coolant temperature (tОЖ) ---
       if (typeof data.temperature === "number" && isFinite(data.temperature)) {
         const spec = getParameterSpec("coolantTemp", ctx);
         setTemperature(quantize(data.temperature, spec.step));
       }
 
-      // --- voltage ---
       if (typeof data.voltage === "number" && isFinite(data.voltage)) {
         const spec = getParameterSpec("voltage", ctx);
         setVoltage(quantize(data.voltage, spec.step));
       }
 
-      // --- mileage ---
       if (typeof data.mileage === "number" && isFinite(data.mileage)) {
         setMileage(data.mileage);
       }
 
-      // --- engine state ---
+      const incomingPMd = typeof data.p_md === "number" ? data.p_md : data.pMd;
+      if (typeof incomingPMd === "number" && isFinite(incomingPMd)) {
+        const spec = getParameterSpec("engineOilPressure", ctx);
+        const clamped = Math.max(spec.scale.from, Math.min(spec.scale.to, incomingPMd));
+        const quantized = quantize(clamped, spec.step);
+        setPMd(quantized);
+      }
+
+      const incomingPSmGmt = typeof data.p_sm_gmt === "number" ? data.p_sm_gmt : data.pSmGmt;
+      if (typeof incomingPSmGmt === "number" && isFinite(incomingPSmGmt)) {
+        const spec = getParameterSpec("hydroSystemPressure", ctx);
+        const clamped = Math.max(spec.scale.from, Math.min(spec.scale.to, incomingPSmGmt));
+        const quantized = quantize(clamped, spec.step);
+        setPSmGmt(quantized);
+      }
+
+      const incomingPUprGmt = typeof data.p_upr_gmt === "number" ? data.p_upr_gmt : data.pUprGmt;
+      if (typeof incomingPUprGmt === "number" && isFinite(incomingPUprGmt)) {
+        const spec = getParameterSpec("hydroControlPressure", ctx);
+        const clamped = Math.max(spec.scale.from, Math.min(spec.scale.to, incomingPUprGmt));
+        const quantized = quantize(clamped, spec.step);
+        setPUprGmt(quantized);
+      }
       if (typeof data.engineRunning === "boolean") {
         setEngineStarted(data.engineRunning);
       } else if (typeof data.speed === "number" && isFinite(data.speed)) {
         const sp = data.speed;
         setEngineStarted((prev) => prev || sp > 0);
       }
-
     };
 
     ws.onerror = (error) => console.error("[WebSocket] Ошибка соединения:", error);
@@ -138,7 +162,8 @@ export const useDashboardLogic = () => {
       console.log("[WebSocket] Соединение закрыто (при размонтировании).");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // один раз
+  }, []);
+
 
   const sendCommand = (command: string) => {
     const ws = socketRef.current;
@@ -165,7 +190,6 @@ export const useDashboardLogic = () => {
     sendCommand("toggle_clutch");
   };
 
-  // --- Indicators по ТЗ через спеки ---
   const indicators: Indicators = useMemo(() => {
     const coolantStatus = evaluateZones(getParameterSpec("coolantTemp", ctx), temperature);
     const fuelFraction = Math.max(0, Math.min(1, fuelLevel / 50));
@@ -173,11 +197,8 @@ export const useDashboardLogic = () => {
     const voltageStatus = evaluateZones(getParameterSpec("voltage", ctx), voltage);
 
     return {
-      // перегрев = аварийная зона по tОЖ
       overheat: coolantStatus.severity === "alarm",
-      // топливо: warn или alarm
       lowFuel: fuelStatus.severity !== "normal",
-      // напряжение: warn или alarm
       lowVoltage: voltageStatus.severity !== "normal",
     };
   }, [ctx, temperature, fuelLevel, voltage]);
@@ -194,11 +215,14 @@ export const useDashboardLogic = () => {
     voltage,
     mileage,
 
-    // режимы (пока не используются UI, но пригодятся)
+    pMd,
+    pSmGmt,
+    pUprGmt,
+
     coolantMode,
     motionMode,
-    setCoolantMode, // можно потом привязать к настройке
-    setMotionMode,  // можно не отдавать наружу, но оставляю для отладки
+    setCoolantMode,
+    setMotionMode,
 
     indicators,
 

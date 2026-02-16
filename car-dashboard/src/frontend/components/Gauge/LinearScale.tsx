@@ -168,7 +168,7 @@ export const LinearScale: React.FC<LinearScaleProps> = ({
             y2={toPoint.y}
             stroke={zoneStroke[zone.kind]}
             strokeWidth={layout.thickness}
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
         );
       })}

@@ -168,37 +168,37 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
           z("red", clampScale(scale, [r(-10, -1)]), "warn"),
           z("yellow", clampScale(scale, [r(5, 55), r(95, 105)]), "warn"),
           z("green", clampScale(scale, [r(55, 95)]), "normal"),
-          z("alarm", clampScale(scale, [r(106, 140)]), "alarm"),
+          z("alarm", clampScale(scale, [r(105.01, 140)]), "alarm"),
         ];
       }
 
-      // вода: красн <5, жёлт 5..55 и 120..125, зел 55..120, авар >125
+      // вода: красн <0, жёлт 5..60 и 90..95, зел 60..90, авар >95
       return [
-        z("red", clampScale(scale, [r(-10, 4)]), "warn"),
-        z("yellow", clampScale(scale, [r(5, 55), r(120, 125)]), "warn"),
-        z("green", clampScale(scale, [r(55, 120)]), "normal"),
-        z("alarm", clampScale(scale, [r(126, 140)]), "alarm"),
+        z("red", clampScale(scale, [r(-10, -1)]), "warn"),
+        z("yellow", clampScale(scale, [r(5, 60), r(90, 95)]), "warn"),
+        z("green", clampScale(scale, [r(60, 90)]), "normal"),
+        z("alarm", clampScale(scale, [r(95.01, 140)]), "alarm"),
       ];
     },
   },
 
-  // tМ.ДВ, °C (масло двигателя)
+  // tМ.ДВ, °C
   engineOilTemp: {
     id: "engineOilTemp",
     label: "t М.ДВ",
     unit: "°C",
     step: 1,
     periodMs: 1000,
-    scale: r(0, 150),
+    scale: r(0, 200),
     sensor: "ДТ1",
     zones: [
-      z("green", [r(0, 119)], "normal"),
-      z("yellow", [r(120, 125)], "warn"),
-      z("alarm", [r(126, 150)], "alarm"),
+      z("green", [r(0, 149)], "normal"),
+      z("yellow", [r(150, 160)], "warn"),
+      z("alarm", [r(161, 200)], "alarm"),
     ],
   },
 
-  // tМ.ГМТ, °C (масло гидромеханической трансмиссии)
+  // tМ.ГМТ, °C
   hydroOilTemp: {
     id: "hydroOilTemp",
     label: "t М.ГМТ",
@@ -238,18 +238,18 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
     unit: "кг/см²",
     step: 0.05,
     periodMs: 1000,
-    scale: r(0, 6),
+    scale: r(0, 5),
     sensor: "ДД2",
     zones: [],
     note: "Нижний порог зависит от режима: * стоянка, ** движение.",
     resolveZones: (ctx: EnvContext) => {
-      const scale = r(0, 6);
+      const scale = r(0, 5);
       const low = ctx.motionMode === "moving" ? 2 : 0.35;
 
       return [
         z("red", clampScale(scale, [r(0, low - 0.0001)]), "warn"),
         z("green", clampScale(scale, [r(low, 4)]), "normal"),
-        z("alarm", clampScale(scale, [r(4.0001, 6)]), "alarm"),
+        z("alarm", clampScale(scale, [r(4.0001, 5)]), "alarm"),
       ];
     },
   },
@@ -270,6 +270,7 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
     ],
   },
 
+
   // U, В
   voltage: {
     id: "voltage",
@@ -287,41 +288,53 @@ export const PARAMETERS: Record<ParamId, ParameterSpec> = {
 };
 
 // Удобный доступ с учетом контекста (режимы ОЖ и движения)
-export const getParameterSpec = (id: ParamId, ctx: EnvContext): ParameterSpec => {
+export function getParameterSpec(id: ParamId, ctx: EnvContext): ParameterSpec {
   const base = PARAMETERS[id];
-  if (!base) throw new Error(`Unknown parameter spec: ${id}`);
+  if (!base.resolveZones) return base;
+  return {
+    ...base,
+    zones: base.resolveZones(ctx),
+  };
+}
 
-  if (base.resolveZones) {
-    return {
-      ...base,
-      zones: base.resolveZones(ctx),
-    };
-  }
-
-  return base;
-};
-
-// Определение зоны/серьёзности по значению
-export const evaluateZones = (
-  spec: ParameterSpec,
-  value: number
-): { zone: ZoneKind; severity: Severity } => {
+// Оценка состояния параметра по зонам
+export function evaluateZones(spec: ParameterSpec, value: number): {
+  severity: Severity;
+  zone: ZoneSpec | null;
+} {
   for (const zone of spec.zones) {
     for (const rr of zone.ranges) {
       if (value >= rr.from && value <= rr.to) {
         return {
-          zone: zone.kind,
-          severity: zone.severity ?? (zone.kind === "alarm" ? "alarm" : "normal"),
+          severity:
+            zone.severity ??
+            (zone.kind === "green"
+              ? "normal"
+              : zone.kind === "yellow" || zone.kind === "red"
+              ? "warn"
+              : "alarm"),
+          zone,
         };
       }
     }
   }
-  return { zone: "green", severity: "normal" };
-};
+  // вне всех зон — трактуем как alarm (защита от дыр в конфиге)
+  return { severity: "alarm", zone: null };
+}
 
-// Округление по "шагу младшего разряда"
-export const quantize = (value: number, step: number): number => {
-  if (!isFinite(value) || step <= 0) return value;
-  const k = 1 / step;
-  return Math.round(value * k) / k;
-};
+// Квантование по шагу
+export function quantize(value: number, step: number): number {
+  if (step <= 0) return value;
+  return Math.round(value / step) * step;
+}
+
+// Универсальная проверка порогов для произвольного параметра
+export function classifyParam(
+  id: ParamId,
+  value: number,
+  ctx: EnvContext
+): { severity: Severity; spec: ParameterSpec } {
+  const spec = getParameterSpec(id, ctx);
+  const res = evaluateZones(spec, value);
+  return { severity: res.severity, spec };
+}

@@ -39,10 +39,19 @@
             label6 = new Label();
             labelGear = new Label();
             comboBoxGear = new ComboBox();
+            numericUpDownPMd = new NumericUpDown();
+            labelPMd = new Label();
+            numericUpDownPSmGmt = new NumericUpDown();
+            labelPSmGmt = new Label();
+            numericUpDownPUprGmt = new NumericUpDown();
+            labelPUprGmt = new Label();
             labelVersion = new Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTemperature).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownFuelLevel).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownVoltage).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPMd).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPSmGmt).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPUprGmt).BeginInit();
             SuspendLayout();
             // 
             // buttonBrake
@@ -125,6 +134,54 @@
             label6.TabIndex = 16;
             label6.Text = "Напряжение сети";
             // 
+            // numericUpDownPMd
+            // 
+            numericUpDownPMd.Location = new Point(159, 332);
+            numericUpDownPMd.Name = "numericUpDownPMd";
+            numericUpDownPMd.Size = new Size(150, 27);
+            numericUpDownPMd.TabIndex = 19;
+            numericUpDownPMd.ValueChanged += numericUpDownPMd_ValueChanged;
+            // 
+            // labelPMd
+            // 
+            labelPMd.Location = new Point(12, 332);
+            labelPMd.Name = "labelPMd";
+            labelPMd.Size = new Size(141, 27);
+            labelPMd.TabIndex = 20;
+            labelPMd.Text = "РМ.ДВ (ДД1)";
+            // 
+            // numericUpDownPSmGmt
+            // 
+            numericUpDownPSmGmt.Location = new Point(159, 374);
+            numericUpDownPSmGmt.Name = "numericUpDownPSmGmt";
+            numericUpDownPSmGmt.Size = new Size(150, 27);
+            numericUpDownPSmGmt.TabIndex = 21;
+            numericUpDownPSmGmt.ValueChanged += numericUpDownPSmGmt_ValueChanged;
+            // 
+            // labelPSmGmt
+            // 
+            labelPSmGmt.Location = new Point(12, 374);
+            labelPSmGmt.Name = "labelPSmGmt";
+            labelPSmGmt.Size = new Size(141, 27);
+            labelPSmGmt.TabIndex = 22;
+            labelPSmGmt.Text = "РСМ.ГМТ (ДД2)";
+            // 
+            // numericUpDownPUprGmt
+            // 
+            numericUpDownPUprGmt.Location = new Point(159, 416);
+            numericUpDownPUprGmt.Name = "numericUpDownPUprGmt";
+            numericUpDownPUprGmt.Size = new Size(150, 27);
+            numericUpDownPUprGmt.TabIndex = 23;
+            numericUpDownPUprGmt.ValueChanged += numericUpDownPUprGmt_ValueChanged;
+            // 
+            // labelPUprGmt
+            // 
+            labelPUprGmt.Location = new Point(12, 416);
+            labelPUprGmt.Name = "labelPUprGmt";
+            labelPUprGmt.Size = new Size(141, 27);
+            labelPUprGmt.TabIndex = 24;
+            labelPUprGmt.Text = "РУПР.ГМТ (ДД3)";
+            // 
             // labelGear
             // 
             labelGear.AutoSize = true;
@@ -146,7 +203,7 @@
             // labelVersion
             // 
             labelVersion.AutoSize = true;
-            labelVersion.Location = new Point(753, 305);
+            labelVersion.Location = new Point(753, 452);
             labelVersion.Name = "labelVersion";
             labelVersion.Size = new Size(35, 20);
             labelVersion.TabIndex = 18;
@@ -156,8 +213,14 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 334);
+            ClientSize = new Size(800, 486);
             Controls.Add(labelVersion);
+            Controls.Add(labelPUprGmt);
+            Controls.Add(numericUpDownPUprGmt);
+            Controls.Add(labelPSmGmt);
+            Controls.Add(numericUpDownPSmGmt);
+            Controls.Add(labelPMd);
+            Controls.Add(numericUpDownPMd);
             Controls.Add(comboBoxGear);
             Controls.Add(labelGear);
             Controls.Add(label6);
@@ -175,6 +238,9 @@
             ((System.ComponentModel.ISupportInitialize)numericUpDownTemperature).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownFuelLevel).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownVoltage).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPMd).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPSmGmt).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownPUprGmt).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -191,6 +257,12 @@
         private Label label6;
         private Label labelGear;
         private ComboBox comboBoxGear;
+        private NumericUpDown numericUpDownPMd;
+        private Label labelPMd;
+        private NumericUpDown numericUpDownPSmGmt;
+        private Label labelPSmGmt;
+        private NumericUpDown numericUpDownPUprGmt;
+        private Label labelPUprGmt;
         private Label labelVersion;
     }
 }

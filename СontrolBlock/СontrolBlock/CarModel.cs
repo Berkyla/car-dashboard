@@ -15,6 +15,9 @@ namespace ControlBlock
         public double FuelLevel { get; private set; }
         public double Voltage { get; private set; }
         public double RPM { get; private set; }
+        public double PMd { get; private set; }
+        public double PSmGmt { get; private set; }
+        public double PUprGmt { get; private set; }
 
         public bool EngineRunning => engineRunning;
         public event Action<string>? GearChanged;
@@ -30,6 +33,9 @@ namespace ControlBlock
 
         private double lastSpeedSent = -1;
         private double lastRPMSent = -1;
+        private double lastPMdSent = -1;
+        private double lastPSmGmtSent = -1;
+        private double lastPUprGmtSent = -1;
 
         private const double TyreCircumference = 2.0;
         private const double FinalDrive = 4.13;
@@ -40,6 +46,9 @@ namespace ControlBlock
             RPM = 0;
             Speed = 0;
             transmissionRatio = GetGearRatio(CurrentGear);
+            PMd = 3.0;
+            PSmGmt = 1.0;
+            PUprGmt = 15.0;
         }
 
         // Плавный запуск двигателя с прогревом температуры, топлива и напряжения
@@ -80,7 +89,7 @@ namespace ControlBlock
             {
                 while (Speed > 0)
                 {
-                    Speed = Math.Max(Speed - 0.5, 0); 
+                    Speed = Math.Max(Speed - 0.5, 0);
                     UpdateMileage();
                     SendData(force: true);
                     await Task.Delay(30);
@@ -126,6 +135,30 @@ namespace ControlBlock
         {
             Voltage = value;
             Program.Log($"Напряжение установлено: {value}");
+            SendData(force: true);
+        }
+
+        // Установка давления РМ.ДВ
+        public void SetPMd(double value)
+        {
+            PMd = value;
+            Program.Log($"РМ.ДВ установлен: {value}");
+            SendData(force: true);
+        }
+
+        // Установка давления РСМ.ГМТ
+        public void SetPSmGmt(double value)
+        {
+            PSmGmt = value;
+            Program.Log($"РСМ.ГМТ установлен: {value}");
+            SendData(force: true);
+        }
+
+        // Установка давления РУПР.ГМТ
+        public void SetPUprGmt(double value)
+        {
+            PUprGmt = value;
+            Program.Log($"РУПР.ГМТ установлен: {value}");
             SendData(force: true);
         }
 
@@ -352,20 +385,37 @@ namespace ControlBlock
         {
             RPM = Math.Max(RPM, 0);
 
-            if (!force && Math.Abs(Speed - lastSpeedSent) < 0.001 && Math.Abs(RPM - lastRPMSent) < 0.001)
+            double speedToSend = Math.Round(Speed, 2);
+            double rpmToSend = Math.Round(RPM, 2);
+            double pMdToSend = Math.Round(PMd, 2);
+            double pSmGmtToSend = Math.Round(PSmGmt, 2);
+            double pUprGmtToSend = Math.Round(PUprGmt, 2);
+
+            if (!force &&
+                Math.Abs(speedToSend - lastSpeedSent) < 0.001 &&
+                Math.Abs(rpmToSend - lastRPMSent) < 0.001 &&
+                Math.Abs(pMdToSend - lastPMdSent) < 0.001 &&
+                Math.Abs(pSmGmtToSend - lastPSmGmtSent) < 0.001 &&
+                Math.Abs(pUprGmtToSend - lastPUprGmtSent) < 0.001)
                 return;
 
-            lastSpeedSent = Speed;
-            lastRPMSent = RPM;
+            lastSpeedSent = speedToSend;
+            lastRPMSent = rpmToSend;
+            lastPMdSent = pMdToSend;
+            lastPSmGmtSent = pSmGmtToSend;
+            lastPUprGmtSent = pUprGmtToSend;
 
             var data = new
             {
-                speed = Math.Round(Speed, 2),
-                rpm = Math.Round(RPM, 2),
+                speed = speedToSend,
+                rpm = rpmToSend,
                 gear = CurrentGear,
                 temperature = Temperature,
                 fuelLevel = FuelLevel,
                 voltage = Voltage,
+                p_md = pMdToSend,
+                p_sm_gmt = pSmGmtToSend,
+                p_upr_gmt = pUprGmtToSend,
                 mileage = Math.Round(Mileage, 4),
                 engineRunning = engineRunning
             };

@@ -5,6 +5,7 @@ import Tachometer from "./Tachometer/Tachometer";
 import VoltageIndicator from "./VoltageIndicator";
 import Odometer from "./Odometer";
 import WarningIndicators from "./WarningIndicators";
+import PressureGauges from "./PressureGauges";
 
 // TODO: поправь путь под свой проект
 import { useDashboardLogic } from "./hooks/useDashboardLogic";
@@ -25,6 +26,9 @@ const App: React.FC = () => {
     mileage,
     gear,
     indicators,
+    pMd,
+    pSmGmt,
+    pUprGmt,
   } = useDashboardLogic();
 
   const [scale, setScale] = useState<number>(() => calculateScale());
@@ -79,6 +83,8 @@ const App: React.FC = () => {
               lowFuel={indicators?.lowFuel ?? false}
               lowVoltage={indicators?.lowVoltage ?? false}
             />
+
+            <PressureGauges pMd={pMd} pSmGmt={pSmGmt} pUprGmt={pUprGmt} />
 
             {/* Основное содержимое приборной панели */}
             <div className="dashboard-content">

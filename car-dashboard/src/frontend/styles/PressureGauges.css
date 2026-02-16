@@ -1,0 +1,50 @@
+.pressureBlock {
+  position: absolute;
+  top: 420px;
+  left: 145px;
+  width: 240px;
+  height: 92px;
+  z-index: 12;
+  display: flex;
+  gap: 2px;
+}
+
+.pressureDial {
+  width: 75px;
+  height: 94px;
+  position: relative;
+}
+
+.pressureDial__svg {
+  display: block;
+  width: 97px;
+  height: 82px;
+  margin-top: 12px;
+}
+
+.pressureDial__title {
+  fill: #e5e7eb;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.pressureDial__value {
+  position: absolute;
+  top: 7;
+  left: 10;
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.pressureDial--warn .pressureDial__value {
+  color: #e5e7eb;
+}
+
+.pressureDial--alarm .pressureDial__value {
+  color: #fecaca;
+}
